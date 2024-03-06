@@ -51,9 +51,10 @@ type BigQueryDatasource struct {
 }
 
 type ConnectionArgs struct {
-	Dataset  string `json:"dataset,omitempty"`
-	Table    string `json:"table,omitempty"`
-	Location string `json:"location,omitempty"`
+	Dataset  string              `json:"dataset,omitempty"`
+	Table    string              `json:"table,omitempty"`
+	Location string              `json:"location,omitempty"`
+	Headers  map[string][]string `json:"grafana-http-headers,omitempty"`
 }
 
 func NewDatasource(ctx context.Context, settings backend.DataSourceInstanceSettings) (instancemgmt.Instance, error) {
@@ -198,6 +199,7 @@ func (s *BigQueryDatasource) Settings(_ context.Context, _ backend.DataSourceIns
 		FillMode: &data.FillMissing{
 			Mode: data.FillModeNull,
 		},
+		ForwardHeaders: true,
 	}
 }
 

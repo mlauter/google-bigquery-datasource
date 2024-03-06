@@ -57,5 +57,9 @@ func getConnectionSettings(settings types.BigQuerySettings, queryArgs *Connectio
 		connectionSettings.Dataset = queryArgs.Dataset
 	}
 
+	if queryArgs.Headers != nil {
+		connectionSettings.Headers = queryArgs.Headers
+	}
+
 	return connectionSettings
 }

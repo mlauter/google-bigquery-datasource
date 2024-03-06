@@ -27,6 +27,7 @@ type ConnectionSettings struct {
 	Location           string
 	Project            string
 	Dataset            string
+	Headers            map[string][]string
 }
 type TableFieldSchema struct {
 	Name        string       `json:"name"`

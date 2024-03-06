@@ -1,19 +1,18 @@
 package driver
 
 import (
+	"cloud.google.com/go/bigquery"
+	bq "cloud.google.com/go/bigquery"
 	"context"
 	"database/sql/driver"
 	"encoding/base64"
 	"fmt"
-	"reflect"
-	"strings"
-	"time"
-
-	"cloud.google.com/go/bigquery"
-	bq "cloud.google.com/go/bigquery"
 	"github.com/grafana/grafana-bigquery-datasource/pkg/bigquery/types"
 	"github.com/grafana/grafana-plugin-sdk-go/backend/log"
 	"google.golang.org/api/iterator"
+	"reflect"
+	"strings"
+	"time"
 )
 
 type Dataset interface {
@@ -123,6 +122,8 @@ func (c *Conn) execContext(ctx context.Context, query string, args []driver.Valu
 	}
 
 	q := c.client.Query(query)
+
+	q.QueryConfig.Labels = c.headersAsLabels()
 	// q.DefaultProjectID = c.cfg.Project // allows omitting project in table reference
 	// q.DefaultDatasetID = c.cfg.Dataset // allows omitting dataset in table reference
 
@@ -224,6 +225,8 @@ func (c *Conn) QueryContext(ctx context.Context, query string, args []driver.Nam
 func (c *Conn) queryContext(ctx context.Context, query string, args []driver.Value) (driver.Rows, error) {
 	q := c.client.Query(query)
 	q.Location = c.client.Location
+
+	q.QueryConfig.Labels = c.headersAsLabels()
 
 	rowsIterator, err := q.Read(ctx)
 	if err != nil {
