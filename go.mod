@@ -130,3 +130,5 @@ require (
 	gopkg.in/fsnotify/fsnotify.v1 v1.4.7 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+replace github.com/grafana/sqlds/v3 v3.0.0 => ../sqlds
