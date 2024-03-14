@@ -367,7 +367,7 @@ func (s *BigQueryDatasource) getApi(ctx context.Context, project, location strin
 
 	httpClient, err := newHTTPClient(settings, httpOptions, bigQueryRoute)
 	if err != nil {
-		return nil, errors.WithMessage(err, "Failed to crate http client")
+		return nil, errors.WithMessage(err, "Failed to create http client")
 	}
 
 	client, err := s.bqFactory(ctx, project, option.WithHTTPClient(httpClient))
