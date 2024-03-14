@@ -190,14 +190,16 @@ func (s *BigQueryDatasource) Converters() (sc []sqlutil.Converter) {
 
 func (s *BigQueryDatasource) FillMode() *data.FillMissing {
 	return &data.FillMissing{
-		Mode: data.FillModeNull,
+		Mode: data.FillModeValue,
+		Value: 0,
 	}
 }
 
 func (s *BigQueryDatasource) Settings(_ context.Context, _ backend.DataSourceInstanceSettings) sqlds.DriverSettings {
 	return sqlds.DriverSettings{
 		FillMode: &data.FillMissing{
-			Mode: data.FillModeNull,
+			Mode: data.FillModeValue,
+			Value: 0,
 		},
 		ForwardHeaders: true,
 	}
