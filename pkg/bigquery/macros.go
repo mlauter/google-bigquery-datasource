@@ -45,6 +45,7 @@ func macroTimeGroup(query *sqlds.Query, args []string) (string, error) {
 			}
 		} else {
 			floatVal, err := strconv.ParseFloat(args[2], 64)
+			log.DefaultLogger.Info("hi miriam, setting fill mode value", floatVal)
 			if err != nil {
 				return "", fmt.Errorf("error parsing fill value %v", args[2])
 			}
