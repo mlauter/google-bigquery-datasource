@@ -1,20 +1,23 @@
 package bigquery
 
 import (
+	"reflect"
 	"testing"
 
+	"github.com/grafana/grafana-plugin-sdk-go/data"
 	"github.com/grafana/sqlds/v3"
 	"github.com/pkg/errors"
 )
 
 func Test_macros(t *testing.T) {
 	tests := []struct {
-		description string
-		macro       string
-		query       *sqlds.Query
-		args        []string
-		expected    string
-		expectedErr error
+		description      string
+		macro            string
+		query            *sqlds.Query
+		args             []string
+		expected         string
+		expectedErr      error
+		expectedFillMode *data.FillMissing
 	}{
 		{
 			"time groups 1w",
@@ -22,6 +25,7 @@ func Test_macros(t *testing.T) {
 			&sqlds.Query{},
 			[]string{"created_at", "1w"},
 			"TIMESTAMP_SECONDS(DIV(UNIX_SECONDS(created_at), 604800) * 604800)",
+			nil,
 			nil,
 		},
 		{
@@ -31,6 +35,7 @@ func Test_macros(t *testing.T) {
 			[]string{"created_at", "1d"},
 			"TIMESTAMP_SECONDS(DIV(UNIX_SECONDS(created_at), 86400) * 86400)",
 			nil,
+			nil,
 		},
 		{
 			"time groups 1M",
@@ -38,6 +43,7 @@ func Test_macros(t *testing.T) {
 			&sqlds.Query{},
 			[]string{"created_at", "1M"},
 			"TIMESTAMP((PARSE_DATE(\"%Y-%m-%d\",CONCAT( CAST((EXTRACT(YEAR FROM created_at)) AS STRING),'-',CAST((EXTRACT(MONTH FROM created_at)) AS STRING),'-','01'))))",
+			nil,
 			nil,
 		},
 		{
@@ -47,6 +53,7 @@ func Test_macros(t *testing.T) {
 			[]string{"created_at", "'1M'"},
 			"TIMESTAMP((PARSE_DATE(\"%Y-%m-%d\",CONCAT( CAST((EXTRACT(YEAR FROM created_at)) AS STRING),'-',CAST((EXTRACT(MONTH FROM created_at)) AS STRING),'-','01'))))",
 			nil,
+			nil,
 		},
 		{
 			"time groups \"1M\"",
@@ -55,6 +62,41 @@ func Test_macros(t *testing.T) {
 			[]string{"created_at", "\"1M\""},
 			"TIMESTAMP((PARSE_DATE(\"%Y-%m-%d\",CONCAT( CAST((EXTRACT(YEAR FROM created_at)) AS STRING),'-',CAST((EXTRACT(MONTH FROM created_at)) AS STRING),'-','01'))))",
 			nil,
+			nil,
+		},
+		{
+			"time groups fill 0",
+			"timeGroup",
+			&sqlds.Query{},
+			[]string{"created_at", "1w", "0"},
+			"TIMESTAMP_SECONDS(DIV(UNIX_SECONDS(created_at), 604800) * 604800)",
+			nil,
+			&data.FillMissing{
+				Mode:  data.FillModeValue,
+				Value: 0,
+			},
+		},
+		{
+			"time groups fill null",
+			"timeGroup",
+			&sqlds.Query{},
+			[]string{"created_at", "1w", "NULL"},
+			"TIMESTAMP_SECONDS(DIV(UNIX_SECONDS(created_at), 604800) * 604800)",
+			nil,
+			&data.FillMissing{
+				Mode:  data.FillModeNull,
+			},
+		},
+		{
+			"time groups fill previous",
+			"timeGroup",
+			&sqlds.Query{},
+			[]string{"created_at", "1w", "previous"},
+			"TIMESTAMP_SECONDS(DIV(UNIX_SECONDS(created_at), 604800) * 604800)",
+			nil,
+			&data.FillMissing{
+				Mode:  data.FillModePrevious,
+			},
 		},
 	}
 	for _, tt := range tests {
@@ -65,6 +107,9 @@ func Test_macros(t *testing.T) {
 			}
 			if res != tt.expected {
 				t.Errorf("unexpected result %v, expecting %v", res, tt.expected)
+			}
+			if (!reflect.DeepEqual(tt.query.FillMissing, tt.expectedFillMode)) {
+				t.Errorf("unexpected fill mode %v, expecting %v", tt.query.FillMissing, tt.expectedFillMode)
 			}
 		})
 	}

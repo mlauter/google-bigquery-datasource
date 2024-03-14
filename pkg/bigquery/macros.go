@@ -3,9 +3,12 @@ package bigquery
 import (
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/grafana/grafana-plugin-sdk-go/backend/gtime"
+	"github.com/grafana/grafana-plugin-sdk-go/backend/log"
+	"github.com/grafana/grafana-plugin-sdk-go/data"
 	"github.com/grafana/sqlds/v3"
 )
 
@@ -28,6 +31,28 @@ func macroTimeGroup(query *sqlds.Query, args []string) (string, error) {
 
 	if args[1] == "" {
 		return "", fmt.Errorf("the second parameter(interval) for $__timeGroup macro cannot be empty")
+	}
+
+	if len(args) == 3 {
+		log.DefaultLogger.Info("hi miriam doing the thing")
+		if args[2] == "NULL" {
+			query.FillMissing = &data.FillMissing{
+				Mode: data.FillModeNull,
+			}
+		} else if args[2] == "previous" {
+			query.FillMissing = &data.FillMissing{
+				Mode: data.FillModePrevious,
+			}
+		} else {
+			floatVal, err := strconv.ParseFloat(args[2], 64)
+			if err != nil {
+				return "", fmt.Errorf("error parsing fill value %v", args[2])
+			}
+			query.FillMissing = &data.FillMissing{
+				Mode:  data.FillModeValue,
+				Value: floatVal,
+			}
+		}
 	}
 
 	timeVar := args[0]
