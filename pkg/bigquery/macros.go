@@ -34,7 +34,7 @@ func macroTimeGroup(query *sqlds.Query, args []string) (string, error) {
 	}
 
 	if len(args) == 3 {
-		log.DefaultLogger.Info("hi miriam doing the thing")
+		log.DefaultLogger.Info("hi miriam doing the thing", args)
 		if args[2] == "NULL" {
 			query.FillMissing = &data.FillMissing{
 				Mode: data.FillModeNull,
